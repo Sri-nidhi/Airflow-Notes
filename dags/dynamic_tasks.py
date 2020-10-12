@@ -1,3 +1,4 @@
+#Reads a list from YAML and creates tasks and subdags dynamically 
 from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.email_operator import EmailOperator
