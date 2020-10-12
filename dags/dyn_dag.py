@@ -1,3 +1,4 @@
+#Creates dynamic dags based on configuration from config_file yaml
 from airflow import DAG
 import dagfactory
 
