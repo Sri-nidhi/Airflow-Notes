@@ -23,7 +23,7 @@ from datetime import datetime
 import datetime as dt
 import calendar
 from std_scripts.std_functions import *
-#from streetaddress import StreetAddressFormatter, StreetAddressParser
+
 
 import yaml
 import papermill as pm
@@ -40,8 +40,8 @@ default_args = {
     'retry_delay': timedelta(seconds=30),
     'on_failure_callback': task_fail_slack_alert
 }
-dag_config = Variable.get("rad_inc_load", deserialize_json=True)
-rad_inc_file_lastrun = Variable.get("rad_inc_file_lastrun")
+dag_config = Variable.get("inc_load", deserialize_json=True)
+inc_file_lastrun = Variable.get("inc_file_lastrun")
 inc_load = int(Variable.get("inc_load_flag"))
 init_df = pd.DataFrame()
 
@@ -60,7 +60,7 @@ current_db = dag_config["current_db"]
 
 
 dag = DAG(
-    'rad_data_refresh_post_pii',
+    'data_ingestion',
     default_args=default_args,
     schedule_interval=None,
     catchup=False,
@@ -72,8 +72,8 @@ dag = DAG(
 def process_file(**kwargs):
     ti = kwargs['ti']
     file_to_process = ti.xcom_pull(key='file_name', task_ids='file_sensor')
-    print(inc_load, (inc_load == 1), ((inc_load == 1) or (rad_inc_file_lastrun != file_to_process)))
-    if((inc_load == 1) or (rad_inc_file_lastrun != file_to_process)):        
+    print(inc_load, (inc_load == 1), ((inc_load == 1) or (inc_file_lastrun != file_to_process)))
+    if((inc_load == 1) or (inc_file_lastrun != file_to_process)):        
         return 'prepare_the_data'
     else:
         return 'stop_task'
@@ -84,10 +84,10 @@ def papermill(**kwargs):
     ti = kwargs['ti']
     file_to_process = ti.xcom_pull(key='file_name', task_ids='file_sensor')
     pm.execute_notebook(
-   path+'rad_refresh_post_pii.ipynb',
+   path+'ingestion.ipynb',
    path+'Output_Log.ipynb',
    parameters = dict(filepath= filepath, file_to_process = file_to_process))
-    Variable.set("rad_inc_file_lastrun", file_to_process)
+    Variable.set("inc_file_lastrun", file_to_process)
     print('Data Pushed to Source')
 
 import glob
@@ -103,7 +103,7 @@ def fetch_latest_file(**context):
 
 trigger_task = TriggerDagRunOperator(
     task_id="trigger_model_run",
-    trigger_dag_id="rad_model_run",  # Ensure this equals the dag_id of the DAG to trigger
+    trigger_dag_id="model_run",  # Ensure this equals the dag_id of the DAG to trigger
     dag=dag,
 )
 
