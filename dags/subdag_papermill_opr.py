@@ -40,7 +40,7 @@ default_args = {
 
 
 main_dag = DAG(
-    'rad_model_run',
+    'subdag_papermill_opr',
     default_args=default_args,
     schedule_interval=None,
     catchup=False,
@@ -51,7 +51,7 @@ main_dag = DAG(
 import yaml
 import papermill as pm
 task = {}
-path =  '/home/ubuntu/Jupyter/RAD_UAT/'
+path =  '/home/ubuntu/Jupyter/Dev/'
 # path '/home/ubuntu/Jupyter/RAD/' for prod
 def papermill(**kwargs):
     pm.execute_notebook(
@@ -80,7 +80,7 @@ with open("/home/ubuntu/airflow/dags/items.yaml", 'r') as stream:
     for j in range(0,len(m)):
         k = ''.join(m[j])
         v =  list(m[j].values())
-        sub_dag[j] = SubDagOperator(subdag = create_sub_dag('rad_model_run',k , v[0],default_args),task_id=k,default_args=default_args, dag=main_dag)
+        sub_dag[j] = SubDagOperator(subdag = create_sub_dag('Subdg_',k , v[0],default_args),task_id=k,default_args=default_args, dag=main_dag)
         if j != 0:
             sub_dag[j-1].set_downstream(sub_dag[j])
 
