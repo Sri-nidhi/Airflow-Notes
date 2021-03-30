@@ -61,7 +61,7 @@ def slack_alert(**kwargs):
     http_conn_id='slack_alert',
     webhook_token=slack_webhook_token,
     message=slack_msg,
-    channel='#velox-alerts',
+    channel='#tech-alerts',
     username='Workflow-Alerts')
   return alert.execute(context=context)
 
